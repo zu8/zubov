@@ -1,10 +1,10 @@
 package com.zuas.fintech.zubov.topFilms.presentation
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.lifecycle.ViewModelProvider
+import androidx.appcompat.app.AppCompatActivity
 import com.zuas.fintech.zubov.R
 import com.zuas.fintech.zubov.databinding.ActivityMainBinding
+import com.zuas.fintech.zubov.topFilms.presentation.topMovies.TopFilmsFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -16,7 +16,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        if (savedInstanceState == null){
+        if (savedInstanceState == null) {
             launchMovieFragment()
         }
     }
@@ -26,7 +26,6 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager
             .beginTransaction()
             .replace(R.id.mainFragmentContainer, TopFilmsFragment.newInstance())
-            .addToBackStack(null)
             .commit()
     }
 }

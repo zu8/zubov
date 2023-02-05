@@ -32,17 +32,17 @@ class MovieAdapter(
             textViewName.text = movie.name
             Picasso.get().load(movie.posterPreview).into(imageViewPosterPreview)
             root.setOnClickListener{
-                onMovieClickListener?.onMovieClick(movie)
+                onMovieClickListener?.onMovieClick(movie.movieId)
             }
-            star.setOnClickListener {
-                onMovieClickListener?.onStarClick(movie)
+            root.setOnLongClickListener {
+                onMovieClickListener?.onMovieLongClick(movie) ?: false
             }
         }
 
     }
 
     interface OnMovieClickListener {
-        fun onMovieClick(movie: Movie)
-        fun onStarClick(movie: Movie)
+        fun onMovieClick(movieId: Int)
+        fun onMovieLongClick(movie: Movie): Boolean
     }
 }

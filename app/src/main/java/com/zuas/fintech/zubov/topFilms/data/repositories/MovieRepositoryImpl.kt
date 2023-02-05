@@ -5,30 +5,33 @@ import com.zuas.fintech.zubov.topFilms.data.network.ApiService
 import com.zuas.fintech.zubov.topFilms.domain.model.Movie
 import com.zuas.fintech.zubov.topFilms.domain.model.PaginatedMovies
 import com.zuas.fintech.zubov.topFilms.domain.repositories.MovieRepository
-import retrofit2.Response
-import java.io.IOException
 
 class MovieRepositoryImpl(
     private val apiService: ApiService,
     private val mapper: MovieMapper
-): MovieRepository {
+) : MovieRepository {
 
 
-    override suspend fun getMovies(page: Int): PaginatedMovies {
-        val result = apiService.loadTopMovies(page=page)
-        if (result.isSuccessful){
-            return mapper.mapMoviesResponseDtoToPaginatedMovies(
+    override suspend fun loadMovies(page: Int): PaginatedMovies {
+        val result = apiService.loadTopMovies(page = page)
+        return if (result.isSuccessful) {
+            mapper.mapMoviesResponseDtoToPaginatedMovies(
                 page,
-                result.body()?.films ?: emptyList())
-        }
-        else{
-            return PaginatedMovies(-1, emptyList())
-            //throw IOException(result.errorBody().toString())
+                result.body()?.films ?: emptyList()
+            )
+        } else {
+            PaginatedMovies(IMPOSSIBLE_VALUE, emptyList())
         }
     }
 
-    override suspend fun getMovie(movieId: Int): Movie {
-        TODO("Not yet implemented")
+    override suspend fun loadSingleMovie(movieId: Int): Movie {
+        val result = apiService.loadMovieDetails(movieId = movieId)
+        return if (result.isSuccessful) {
+            result.body()?.let { mapper.mapSingleMovieDtoToMovie(it) } ?: Movie()
+        } else {
+            Movie(movieId = IMPOSSIBLE_VALUE)
+        }
+
     }
 
     override suspend fun addMovie(movie: Movie) {
@@ -37,5 +40,9 @@ class MovieRepositoryImpl(
 
     override suspend fun deleteMovie(movie: Movie) {
         TODO("Not yet implemented")
+    }
+
+    companion object {
+        const val IMPOSSIBLE_VALUE = -1
     }
 }

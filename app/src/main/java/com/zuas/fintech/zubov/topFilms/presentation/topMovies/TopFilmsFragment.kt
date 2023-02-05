@@ -1,20 +1,24 @@
-package com.zuas.fintech.zubov.topFilms.presentation
+package com.zuas.fintech.zubov.topFilms.presentation.topMovies
 
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.zuas.fintech.zubov.R
 import com.zuas.fintech.zubov.databinding.FragmentTopFilmsBinding
+import com.zuas.fintech.zubov.topFilms.domain.model.Movie
+import com.zuas.fintech.zubov.topFilms.presentation.Event
+import com.zuas.fintech.zubov.topFilms.presentation.InfiniteScrollListener
+import com.zuas.fintech.zubov.topFilms.presentation.OnFailureFragment
 import com.zuas.fintech.zubov.topFilms.presentation.adapters.MovieAdapter
+import com.zuas.fintech.zubov.topFilms.presentation.movieDetails.MovieDetailsFragment
 
 
 class TopFilmsFragment : Fragment() {
@@ -33,7 +37,7 @@ class TopFilmsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         // Inflate the layout for this fragment
-        _binding = FragmentTopFilmsBinding.inflate(inflater,container,false)
+        _binding = FragmentTopFilmsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -44,19 +48,18 @@ class TopFilmsFragment : Fragment() {
     }
 
     private fun requestInitialMovieList() {
-       viewModel.onEvent(TopMoviesEvent.RequestInitialList)
+        viewModel.onEvent(TopMoviesEvent.RequestInitialList)
     }
 
-
-    private fun setupUI(){
+    private fun setupUI() {
         val adapter = createAdapter()
         setupRecyclerView(adapter)
         subscribeToViewStateUpdates(adapter)
     }
 
     private fun subscribeToViewStateUpdates(adapter: MovieAdapter) {
-        viewModel.state.observe(viewLifecycleOwner){
-            updateScreenState(it,adapter)
+        viewModel.state.observe(viewLifecycleOwner) {
+            updateScreenState(it, adapter)
             isLoading = it.loading
             isLastPage = it.isLastPage
         }
@@ -76,8 +79,7 @@ class TopFilmsFragment : Fragment() {
         val fallbackMessage = getString(R.string.an_error_occurred)
         val snackbarMessage = if (unhandledFailure.message.isNullOrEmpty()) {
             fallbackMessage
-        }
-        else {
+        } else {
             unhandledFailure.message!!
         }
 
@@ -87,7 +89,7 @@ class TopFilmsFragment : Fragment() {
         parentFragmentManager.popBackStack()
         parentFragmentManager
             .beginTransaction()
-            .replace(R.id.mainFragmentContainer,OnFailureFragment.newInstance())
+            .replace(R.id.mainFragmentContainer, OnFailureFragment.newInstance())
             .commit()
     }
 
@@ -103,9 +105,25 @@ class TopFilmsFragment : Fragment() {
 
         }
         binding.recyclerViewMovies
-            .addOnScrollListener(createInfiniteScrollListener(
-                binding.recyclerViewMovies.layoutManager as LinearLayoutManager))
+            .addOnScrollListener(
+                createInfiniteScrollListener(
+                    binding.recyclerViewMovies.layoutManager as LinearLayoutManager
+                )
+            )
+        _adapter.onMovieClickListener = object : MovieAdapter.OnMovieClickListener {
+            override fun onMovieClick(movieId: Int) {
+                parentFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.mainFragmentContainer, MovieDetailsFragment.newInstance(movieId))
+                    .addToBackStack(null)
+                    .commit()
+            }
 
+            override fun onMovieLongClick(movie: Movie): Boolean {
+                Log.d("topFilms", movie.toString())
+                return true
+            }
+        }
     }
 
     private fun createAdapter(): MovieAdapter {
@@ -121,7 +139,9 @@ class TopFilmsFragment : Fragment() {
             isLoading,
             isLastPage
         ) {
-            override fun loadMoreItems() { loadNextMoviePage() }
+            override fun loadMoreItems() {
+                loadNextMoviePage()
+            }
         }
     }
 

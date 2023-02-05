@@ -5,7 +5,7 @@
     android:id="@+id/topFilmsFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".topFilms.presentation.TopFilmsFragment">
+    tools:context=".topFilms.presentation.topMovies.TopFilmsFragment">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewMovies"

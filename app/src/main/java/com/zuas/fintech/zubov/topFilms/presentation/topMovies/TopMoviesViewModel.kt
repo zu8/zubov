@@ -1,4 +1,4 @@
-package com.zuas.fintech.zubov.topFilms.presentation
+package com.zuas.fintech.zubov.topFilms.presentation.topMovies
 
 import android.app.Application
 import android.util.Log
@@ -11,7 +11,8 @@ import com.zuas.fintech.zubov.topFilms.data.network.ApiFactory
 import com.zuas.fintech.zubov.topFilms.data.network.ApiService
 import com.zuas.fintech.zubov.topFilms.data.repositories.MovieRepositoryImpl
 import com.zuas.fintech.zubov.topFilms.domain.model.PaginatedMovies
-import com.zuas.fintech.zubov.topFilms.domain.usecases.GetMoviesUseCase
+import com.zuas.fintech.zubov.topFilms.domain.usecases.LoadMoviesUseCase
+import com.zuas.fintech.zubov.topFilms.presentation.Event
 import kotlinx.coroutines.launch
 
 class TopMoviesViewModel(
@@ -22,34 +23,38 @@ class TopMoviesViewModel(
     private val apiService: ApiService = ApiFactory.apiService
     private val mapper = MovieMapper
     private val repository = MovieRepositoryImpl(apiService, mapper)
-    private val getMoviesUseCase: GetMoviesUseCase = GetMoviesUseCase(repository)
+    private val loadMoviesUseCase: LoadMoviesUseCase = LoadMoviesUseCase(repository)
     private var page = DEFAULT_PAGE
     private var continueDownloading = true
-
 
 
     private val _state = MutableLiveData<TopMoviesViewState>()
     val state: LiveData<TopMoviesViewState>
         get() = _state
 
-    init{
+    init {
         _state.value = TopMoviesViewState()
-    }
-
-    private fun isLastPage(_page: Int): Boolean {
-        return _page == page
     }
 
     fun onEvent(event: TopMoviesEvent) {
         when (event) {
-            is TopMoviesEvent.RequestInitialList -> loadMovies()
-            is TopMoviesEvent.RequestMoreMovies -> loadNextMoviePage()
+            is TopMoviesEvent.RequestInitialList -> {
+                loadMovies()
+
+            }
+            is TopMoviesEvent.RequestMoreMovies -> {
+                loadNextMoviePage()
+            }
         }
     }
 
     private fun loadMovies() {
         state.value?.let {
-            if (it.movies.isEmpty()) loadNextMoviePage()
+            if (it.movies.isEmpty()) {
+                loadNextMoviePage()
+            } else {
+                loadNextMoviePage()
+            }
         }
     }
 
@@ -57,19 +62,28 @@ class TopMoviesViewModel(
         val newState = _state.value?.copy(loading = downloading)
         newState?.let { _state.value = it }
     }
-    private fun noMoreContent(paginatedMovies: PaginatedMovies): Boolean{
+
+    private fun setLastPageState() {
+        val newState = _state.value?.copy(isLastPage = true)
+        newState?.let { _state.value = it }
+    }
+
+    private fun noMoreContent(paginatedMovies: PaginatedMovies): Boolean {
         return paginatedMovies.page < 0
     }
 
     private fun loadNextMoviePage() {
-        if (!continueDownloading) return
+        if (!continueDownloading) {
+            return
+        }
         setIsLoadingState(true)
         viewModelScope.launch {
             lateinit var paginatedMovies: PaginatedMovies
-            try{
-                paginatedMovies = getMoviesUseCase(page)
+            try {
+                paginatedMovies = loadMoviesUseCase(page)
                 if (noMoreContent(paginatedMovies)) {
                     setIsLoadingState(false)
+                    setLastPageState()
                     continueDownloading = false
                     return@launch
                 }
@@ -78,14 +92,13 @@ class TopMoviesViewModel(
                 val newState = updatedMovieSet?.let {
                     _state.value?.copy(
                         movies = it.toList(),
-                        isLastPage = isLastPage(paginatedMovies.page),
                         loading = false
                     )
                 }
                 _state.value = newState!!
-                 page++
-            }
-            catch ( e: Exception){
+                page++
+
+            } catch (e: Exception) {
                 Log.d("MovieViewModel", e.toString())
                 val newState = _state.value?.copy(
                     failure = Event(e.fillInStackTrace()),
@@ -96,7 +109,8 @@ class TopMoviesViewModel(
 
         }
     }
-    companion object{
+
+    companion object {
         const val UI_PAGE_SIZE = 20
         const val DEFAULT_PAGE = 1
     }

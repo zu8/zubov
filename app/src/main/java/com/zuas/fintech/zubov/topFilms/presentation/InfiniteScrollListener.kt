@@ -9,7 +9,7 @@ abstract class InfiniteScrollListener(
     private var isLoading: Boolean,
     private var isLastPage: Boolean
 
-) : RecyclerView.OnScrollListener()  {
+) : RecyclerView.OnScrollListener() {
 
     override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
         super.onScrolled(recyclerView, dx, dy)
@@ -18,7 +18,6 @@ abstract class InfiniteScrollListener(
         val visibleItemCount = layoutManager.childCount
         val totalItemCount = layoutManager.itemCount
         val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
-
         if (!isLoading && !isLastPage) {
             if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
                 && firstVisibleItemPosition >= 0

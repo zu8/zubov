@@ -7,7 +7,10 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="zimaBlue">#0094FF</color>>
+    <color name="zimaBlue">#0094FF</color>
     <color name ="zimaLight">#DEEFFF</color>
+    <color name ="grey">#99000000</color>
+    <color name ="dark_grey">#BB000000</color>
+
 
 </resources>

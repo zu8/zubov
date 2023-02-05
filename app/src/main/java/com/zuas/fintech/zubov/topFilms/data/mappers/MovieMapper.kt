@@ -3,6 +3,7 @@ package com.zuas.fintech.zubov.topFilms.data.mappers
 import com.zuas.fintech.zubov.topFilms.data.network.model.CountryDto
 import com.zuas.fintech.zubov.topFilms.data.network.model.GenreDto
 import com.zuas.fintech.zubov.topFilms.data.network.model.MovieDto
+import com.zuas.fintech.zubov.topFilms.data.network.model.SingleMovieResponseDto
 import com.zuas.fintech.zubov.topFilms.domain.model.Country
 import com.zuas.fintech.zubov.topFilms.domain.model.Genre
 import com.zuas.fintech.zubov.topFilms.domain.model.Movie
@@ -46,7 +47,8 @@ object MovieMapper {
             posterPreview = movieDto.posterPreview
         )
     }
-    fun mapMovieDtoListToMovieList(moviesDto: List<MovieDto>): List<Movie>{
+
+    fun mapMovieDtoListToMovieList(moviesDto: List<MovieDto>): List<Movie> {
         val list = mutableListOf<Movie>()
         for (movieDto in moviesDto) {
             list.add(mapMovieDtoToMovie(movieDto))
@@ -54,10 +56,28 @@ object MovieMapper {
         return list.toList()
     }
 
-    fun mapMoviesResponseDtoToPaginatedMovies (page: Int, movieDtoList: List<MovieDto>): PaginatedMovies {
+    fun mapMoviesResponseDtoToPaginatedMovies(
+        page: Int,
+        movieDtoList: List<MovieDto>
+    ): PaginatedMovies {
         return PaginatedMovies(
             page = page,
             movies = mapMovieDtoListToMovieList(movieDtoList)
         )
     }
+
+    fun mapSingleMovieDtoToMovie(singleMovieResponseDto: SingleMovieResponseDto): Movie {
+        return Movie(
+            movieId = singleMovieResponseDto.filmId,
+            name = singleMovieResponseDto.name,
+            year = "",
+            countries = mapCountryDtoListToCountryList(singleMovieResponseDto.countries),
+            genres = mapGenreDtoListToGenreList(singleMovieResponseDto.genres),
+            poster = singleMovieResponseDto.poster,
+            description = singleMovieResponseDto.description ?: NO_DESCRIPTION
+        )
+
+    }
+
+    const val NO_DESCRIPTION = "К сожалению, описание для этого фильма отсутствует"
 }
