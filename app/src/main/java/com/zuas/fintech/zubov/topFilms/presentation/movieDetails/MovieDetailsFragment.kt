@@ -50,7 +50,6 @@ class MovieDetailsFragment : Fragment() {
         viewModel.onEvent(MovieDetailsEvent.RequestFilm)
     }
 
-
     private fun subscribeToViewStateUpdates() {
         viewModel.state.observe(viewLifecycleOwner) {
             updateScreenState(it)
@@ -106,6 +105,10 @@ class MovieDetailsFragment : Fragment() {
             result.add(country.country)
         }
         return result.joinToString(", ")
+    }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     companion object {
